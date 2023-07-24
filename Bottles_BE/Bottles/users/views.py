@@ -120,3 +120,26 @@ class ValidateTokenView(APIView):
             return Response({ "error": "Invalid token"},status=401)
         else:
             return Response({ "message": "valid token"},status=200)
+
+
+#api/auth/validate-token/
+class UserDetailView(APIView):
+    def get(self, request, id):
+        user = Users.objects.get(username=id) # id랑 같은 값을 갖는 데이터 탐색 (남들이 보기에 id == 백엔드의 username)
+        return Response({
+            "id": user.username,           	
+            "name": user.name,       
+            "email": user.email,  
+            "info": user.info 
+
+        },status=200)
+    
+    #유저 정보 수정
+    def put(self, request, id):
+        user = Users.objects.get(username=id) # id랑 같은 값을 갖는 데이터 탐색 (남들이 보기에 id == 백엔드의 username)
+        pass # 일하세요 동은씨
+    
+    #유저정보 삭제
+    def delete(self, request, id):
+        user = Users.objects.get(username=id) # id랑 같은 값을 갖는 데이터 탐색 (남들이 보기에 id == 백엔드의 username)
+        pass # 일하세요 동은씨
