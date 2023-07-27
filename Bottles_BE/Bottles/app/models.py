@@ -13,7 +13,7 @@ class Users(models.Model):
     pw = models.CharField(max_length=30)
     name = models.CharField(max_length=30)
     email = models.CharField(unique=True, max_length=40)
-    preface = models.TextField(blank=True, null=True)
+    info = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField()
 
     class Meta:
@@ -34,7 +34,7 @@ class Albums(models.Model):
     made_by = models.ForeignKey('Users', models.DO_NOTHING, db_column='made_by')
     bottles = models.IntegerField()
     title = models.TextField()
-    preface = models.TextField()
+    info = models.TextField()
     number = models.IntegerField()
     created_at = models.DateTimeField()
     updated_at = models.DateTimeField(blank=True, null=True)

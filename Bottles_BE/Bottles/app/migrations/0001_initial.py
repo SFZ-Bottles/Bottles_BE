@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('bottles', models.IntegerField()),
                 ('title', models.TextField()),
-                ('preface', models.TextField()),
+                ('info', models.TextField()),
                 ('number', models.IntegerField()),
                 ('created_at', models.DateTimeField()),
                 ('updated_at', models.DateTimeField(blank=True, null=True)),
@@ -61,7 +61,7 @@ class Migration(migrations.Migration):
                 ('pw', models.CharField(max_length=30)),
                 ('name', models.CharField(max_length=30)),
                 ('email', models.CharField(max_length=40, unique=True)),
-                ('preface', models.TextField(blank=True, null=True)),
+                ('info', models.TextField(blank=True, null=True)),
                 ('created_at', models.DateTimeField()),
             ],
             options={
