@@ -9,10 +9,12 @@ from rest_framework import status
 
 import jwt, datetime
 
-from users.models import Users
-from users.serializers import UsersSerializer
+from users.models import Users, Friendship
+from users.serializers import UsersSerializer, FollowListSerializer, FollowedListSerializer
 from users.auth import Authenticate
 from local_settings import JWT_SECRET_KEY
+
+from django.shortcuts import get_object_or_404
 
 
 #api/users/
@@ -120,6 +122,81 @@ class ValidateTokenView(APIView):
             return Response({ "error": "Invalid token"},status=401)
         else:
             return Response({ "message": "valid token"},status=200)
+
+#api/users/{user_id}/follow/
+class FollowListView(APIView):
+    
+    #팔로우 요청
+    def post(self, request, id):
+
+        """
+        #Authenticate
+        #아이디 및 비밀번호 확인
+        user_id=Authenticate(request)
+        if(user_id==False):
+            return Response({ "error": "Invalid token"},status=401)
+        """
+
+        #variable declare
+        follower_id = request.data['target_user_id']
+        followed_id = id
+        follower = Users.objects.get(username=follower_id)
+        followed = Users.objects.get(username=followed_id)
+
+        #matching
+        friendship_instance = Friendship(follower=follower, followed=followed)
+        friendship_instance.save()
+
+        #response
+        return Response({ "message": "ok, " + follower_id + "is now following user with ID "+ followed_id}
+                        ,status=status.HTTP_201_CREATED)        
+        
+    
+    #팔로잉 리스트 요청
+    def get(self, request, id):
+        """
+        #Authenticate
+        #아이디 및 비밀번호 확인
+        user_id=Authenticate(request)
+        if(user_id==False):
+            return Response({ "error": "Invalid token"},status=401)
+        """
+        user = get_object_or_404(Users, username=id)
+        queryset = Friendship.objects.filter(follower=user).order_by('-created_at')
+
+        serializer = FollowListSerializer(queryset, many=True)
+
+        response_data = {
+            "message": "ok",
+            "num": len(serializer.data),
+            "result": serializer.data
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
+
+
+#api/users/{user_id}/follower/
+class FollowerListView(APIView):
+    
+    #팔로워 리스트 요청
+    def get(self, request, id):
+        """
+        #Authenticate
+        #아이디 및 비밀번호 확인
+        user_id=Authenticate(request)
+        if(user_id==False):
+            return Response({ "error": "Invalid token"},status=401)
+        """
+        user = get_object_or_404(Users, username=id)
+        queryset = Friendship.objects.filter(followed=user).order_by('-created_at')
+
+        serializer = FollowedListSerializer(queryset, many=True)
+
+        response_data = {
+            "message": "ok",
+            "num": len(serializer.data),
+            "result": serializer.data
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
 
 
 #api/auth/validate-token/

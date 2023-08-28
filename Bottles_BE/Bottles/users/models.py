@@ -30,7 +30,7 @@ class Users(models.Model):
 class Friendship(models.Model):
     follower = models.ForeignKey('Users', models.DO_NOTHING, db_column='follower', related_name= 'Friends_follower')
     followed = models.ForeignKey('Users', models.DO_NOTHING, db_column='followed', related_name= 'Friends_followed')
-    created_at = models.DateTimeField()
+    created_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
         managed = False
