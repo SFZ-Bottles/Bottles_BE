@@ -67,23 +67,16 @@ class CommentsListView(APIView):
                                     made_by = owner,
                                     content = content,
                                     mentioned_user =mentioned_user)
-                
-            print('a')
+
             new_comment.save()
-            print('b')
             # parent가 있는 경우
             if parent_comment_id is not None and parent_comment_id != 'null':
-                print('c')
                 new_reply = Reply(parent_comment_id= parent_comment_id, child_comment_id= new_comment.id)
-                print('d')
                 new_reply.save()
-                print('e')
             
             #응답
             result = Comments.objects.get(id=new_comment.id)
-            print('f')
             serializer = CommentResponseSerializer(result)
-            print('g')
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         except Exception as e:
