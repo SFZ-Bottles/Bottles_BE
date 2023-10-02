@@ -26,8 +26,13 @@ class AlbumListSerializer(serializers.ModelSerializer):
 
     
     def get_cover_image_url(self, obj):
-        return 0
-        #return obj.cover_image.url
+        # Find the cover page with species="cover" within the related pages
+        cover_page = obj.page.filter(species="cover").first()
+        
+        if cover_page:
+            return SERVER_ADDRESS + "api/albums/image/" + cover_page.id + '/'
+        else:
+            return SERVER_ADDRESS + "api/albums/image/" + '0' + '/'
     
 
 
@@ -45,7 +50,7 @@ class PageResponseSerializer(serializers.ModelSerializer):
     
     def get_data(self, obj):
         if obj.species in ['cover', 'image', 'video']:
-            return SERVER_ADDRESS + 'api/albums/' + obj.id +'/'
+            return SERVER_ADDRESS + 'api/albums/image/' + obj.id +'/'
         
         elif obj.species == 'text':
             return obj.item

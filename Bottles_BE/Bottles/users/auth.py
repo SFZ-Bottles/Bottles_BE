@@ -4,10 +4,14 @@ from users.models import Users
 from local_settings import JWT_SECRET_KEY
 
 def Authenticate(request):
-    token = request.COOKIES.get('token')
+
+    
+
+    token = request.META.get('HTTP_AUTHORIZATION')
     if not token :
-        print("없음")
-        return False
+        token = request.COOKIES.get('token')
+        if not token :
+            return False
     try:
         payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=['HS256'])
         user = Users.objects.get(username = payload['id'])

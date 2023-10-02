@@ -7,15 +7,12 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
-import jwt, datetime
-
 from albums.models import Albums, Pages
 from users.models import Users, Friendship
 from users.auth import Authenticate
 
 from django.http import JsonResponse
 from django.views import View
-from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.core.files.uploadhandler import FileUploadHandler
 from django.core.files.uploadedfile import TemporaryUploadedFile
@@ -30,20 +27,31 @@ import json
 from albums.serializers import AlbumResponseSerializer, AlbumListSerializer
 
 def convert_to_boolean(value):
-    if value.lower() == "true":
+    print("___________________________________________")
+    print(value)
+    print("___________________________________________")
+    if value.lower() == "true" or value.lower() == "True":
         return True
-    elif value.lower() == "false":
+    elif value.lower() == "false" or value.lower() == "False":
+        return False
+    elif value == True:
+        return True
+    elif value == False:
         return False
     else:
         raise ValueError("Invalid boolean string")
 
-#api/albums
+#api/albums/
 @method_decorator(csrf_exempt, name='dispatch')
 class FileUploadView(APIView):
     
     # get album list
     def get(self, request, *args, **kwargs):
         #아이디 및 비밀번호 확인
+        print(1)
+        print(request.COOKIES.get('token'))
+        print(2)
+        print(request.META.get('HTTP_AUTHORIZATION'))
         user_id=Authenticate(request)
         if(user_id==False):
             return Response({ "error": "Invalid token"},status=401)
@@ -52,7 +60,13 @@ class FileUploadView(APIView):
         is_private = self.request.query_params.get('is_private', False)
         target = self.request.query_params.get('target', 'follow')
         counts = int(self.request.query_params.get('counts', 1))
-        num = int(self.request.query_params.get('num', 1))
+        #num = int(self.request.query_params.get('num', 1))
+        try:
+             num = int(self.request.query_params.get('num', 1))
+         # num은 정수로 변환되었습니다.
+        except ValueError:
+         # 'num'이 정수로 변환할 수 없는 문자열인 경우 예외 발생
+            num = 1 # 또는 다른 기본값 설정
         order_by = self.request.query_params.get('order_by', '-created_at')
 
         if target == "follow":
@@ -85,8 +99,32 @@ class FileUploadView(APIView):
     
     # create an album
     def post(self, request, *args, **kwargs):
+
+        print("Request method:", request.method)
+        print("Request content type:", request.content_type)
+        print("Request body:", request.body)
+
         
+
+
+        
+        print("@@@@@@@@@@@@@@@@@@@@@@")
+        
+        print('user_id: ')
+        print(request.POST.get('user_id'))
+        print('num: ')
+        print(request.POST.get('num'))
+        print('title: ')
+        print(request.POST.get('title', 'A'))
+        print('preface: ')
+        print(request.POST.get('preface', 'A'))
+        print('data: ' )
+        print(request.POST.get('data'))
+        print('is_private: ')
+        print(request.POST.get('is_private'))
         #get values by key
+        print("@@@@@@@@@@@@@@@@@@@@@@")
+
         is_private = convert_to_boolean(request.POST.get('is_private'))
         num = int(request.POST.get('num'))
         user_id = request.POST.get('user_id')
@@ -196,5 +234,41 @@ class AlbumDetailView(APIView):
             return Response({ "error": "Album not found"}, status=404)
         
         return Response(album_serializer.data, status=status.HTTP_201_CREATED)
+    
+
+from PIL import Image
+import io
+
+class ImageView(APIView):
+    def get(self, request, id):
+        resizing = request.query_params.get('resizing', False)
+        width = int(request.query_params.get('width', 0))
+        height = int(request.query_params.get('height', 0))
+
+        # set image path
+        if (id=='0'):
+            image_path = 'MediaLibrary/ServiceImages/BottlesLogo.jpeg'
+        else:
+            page_instance = Pages.objects.get(id=id)
+            image_path = page_instance.item
+
+        # check image path
+        if not os.path.exists(image_path):
+            return Response({"error": "Image not found"}, status=404)
+
+        # image resizing
+        if resizing:
+            image = Image.open(image_path)
+            if width > 0 and height > 0:
+                image = image.resize((width, height), Image.ANTIALIAS)
+            image_io = io.BytesIO()
+            image.save(image_io, format='JPEG')
+            image_data = image_io.getvalue()
+        else:
+            with open(image_path, 'rb') as image_file:
+                image_data = image_file.read()
+
+        response = HttpResponse(image_data, content_type='image/jpeg')
+        return response
         
 

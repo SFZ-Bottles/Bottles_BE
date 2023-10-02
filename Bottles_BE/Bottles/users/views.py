@@ -10,7 +10,7 @@ from rest_framework import status
 import jwt, datetime
 
 from users.models import Users, Friendship
-from users.serializers import UsersSerializer, FollowListSerializer, FollowedListSerializer
+from users.serializers import UsersSerializer, UsernameSerializer
 from users.auth import Authenticate
 from local_settings import JWT_SECRET_KEY
 
@@ -96,7 +96,7 @@ class LoginView(APIView):
         payload = {
             'id' : user.username,
             'email' : user.email,
-            'exp' : datetime.datetime.now() + datetime.timedelta(minutes=60),
+            'exp' : datetime.datetime.now() + datetime.timedelta(days=30),
             'iat' : datetime.datetime.now()
         }
 
@@ -106,11 +106,12 @@ class LoginView(APIView):
         try:
             res.set_cookie(key= 'token', value=token, httponly= True)
         except:
-            pass
+            print('로그인 실패')
 
         res.data = {
             'token' : token
         }
+        print(token)
         return res
     
 #api/auth/validate-token/
@@ -138,8 +139,8 @@ class FollowListView(APIView):
         """
 
         #variable declare
-        follower_id = request.data['target_user_id']
-        followed_id = id
+        follower_id = id
+        followed_id = request.data['target_user_id']
         follower = Users.objects.get(username=follower_id)
         followed = Users.objects.get(username=followed_id)
 
@@ -148,7 +149,7 @@ class FollowListView(APIView):
         friendship_instance.save()
 
         #response
-        return Response({ "message": "ok, " + follower_id + "is now following user with ID "+ followed_id}
+        return Response({ "message": "ok, " + follower_id + " is now following user with ID "+ followed_id}
                         ,status=status.HTTP_201_CREATED)        
         
     
@@ -162,9 +163,10 @@ class FollowListView(APIView):
             return Response({ "error": "Invalid token"},status=401)
         """
         user = get_object_or_404(Users, username=id)
-        queryset = Friendship.objects.filter(follower=user).order_by('-created_at')
+        following_list = Friendship.objects.filter(follower=user.id).order_by('-created_at').values_list('followed', flat=True)
+        queryset = Users.objects.filter(id__in=following_list)
 
-        serializer = FollowListSerializer(queryset, many=True)
+        serializer = UsernameSerializer(queryset, many=True)
 
         response_data = {
             "message": "ok",
@@ -187,9 +189,10 @@ class FollowerListView(APIView):
             return Response({ "error": "Invalid token"},status=401)
         """
         user = get_object_or_404(Users, username=id)
-        queryset = Friendship.objects.filter(followed=user).order_by('-created_at')
+        following_list = Friendship.objects.filter(followed=user.id).order_by('-created_at').values_list('follower', flat=True)
+        queryset = Users.objects.filter(id__in=following_list)
 
-        serializer = FollowedListSerializer(queryset, many=True)
+        serializer = UsernameSerializer(queryset, many=True)
 
         response_data = {
             "message": "ok",

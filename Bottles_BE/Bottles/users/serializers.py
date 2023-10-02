@@ -6,7 +6,16 @@ class UsersSerializer(serializers.ModelSerializer):
         model = Users
         fields = ['username', 'pw', 'name', 'email', 'info', 'create_at']
 
+class UsernameSerializer(serializers.ModelSerializer):
+    #user_id = serializers.CharField(source='user.username')
+    id = serializers.CharField(source='username')
+    
+    class Meta:
+        model = Users
+        fields = ['id']
 
+
+"""
 class FollowListSerializer(serializers.Serializer):
     user_id = serializers.CharField(source='followed.username')
 
@@ -20,3 +29,4 @@ class FollowedListSerializer(serializers.Serializer):
     class Meta:
         model = Friendship
         fields = ['user_id']
+"""
