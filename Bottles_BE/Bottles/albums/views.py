@@ -27,9 +27,6 @@ import json
 from albums.serializers import AlbumResponseSerializer, AlbumListSerializer
 
 def convert_to_boolean(value):
-    print("___________________________________________")
-    print(value)
-    print("___________________________________________")
     if value.lower() == "true" or value.lower() == "True":
         return True
     elif value.lower() == "false" or value.lower() == "False":
@@ -48,10 +45,8 @@ class FileUploadView(APIView):
     # get album list
     def get(self, request, *args, **kwargs):
         #아이디 및 비밀번호 확인
-        print(1)
-        print(request.COOKIES.get('token'))
-        print(2)
-        print(request.META.get('HTTP_AUTHORIZATION'))
+        #print(request.COOKIES.get('token'))
+        #print(request.META.get('HTTP_AUTHORIZATION'))
         user_id=Authenticate(request)
         if(user_id==False):
             return Response({ "error": "Invalid token"},status=401)

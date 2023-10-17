@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'users',
     'albums',
     'comments',
+    'search',
 ]
 
 MIDDLEWARE = [
