@@ -23,6 +23,7 @@ urlpatterns = [
     path('api/albums/', include('albums.urls')),
     path('api/comments/', include('comments.urls')),
     path('api/search/', include('search.urls')),
+    path('api/chatrooms/', include('chatsystem.urls')),   
     path('admin/', admin.site.urls),
 ]
 

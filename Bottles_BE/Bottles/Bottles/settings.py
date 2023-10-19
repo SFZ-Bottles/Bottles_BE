@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'albums',
     'comments',
     'search',
+    'chatsystem',
 ]
 
 MIDDLEWARE = [
