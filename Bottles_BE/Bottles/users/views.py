@@ -205,21 +205,64 @@ class FollowerListView(APIView):
 #api/auth/validate-token/
 class UserDetailView(APIView):
     def get(self, request, id):
-        user = Users.objects.get(username=id) # id랑 같은 값을 갖는 데이터 탐색 (남들이 보기에 id == 백엔드의 username)
-        return Response({
-            "id": user.username,           	
-            "name": user.name,       
-            "email": user.email,  
-            "info": user.info 
+        try:
+            user = Users.objects.get(username=id) # id랑 같은 값을 갖는 데이터 탐색 (남들이 보기에 id == 백엔드의 username)
+            user_data = {
+                "id": user.username,           	
+                "name": user.name,       
+                "email": user.email,  
+                "info": user.info 
 
-        },status=200)
+            }
+            return Response(user_data, status = status.HTTP_200_OK)
+        except Users.DoesNotExist:
+            return Response({"error": "User not exist"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     #유저 정보 수정
     def put(self, request, id):
-        user = Users.objects.get(username=id) # id랑 같은 값을 갖는 데이터 탐색 (남들이 보기에 id == 백엔드의 username)
-        pass # 일하세요 동은씨
+        try:
+            user = Users.objects.get(username=id)
+            new_id = request.data.get('id')
+            new_info = request.data.get('info')
+            password = request.data.get('password')
+
+            # Check if the provided password is correct
+            # if not check_password(password, user.password):
+            #     return Response({"error": "Unauthorized request"}, status=status.HTTP_401_UNAUTHORIZED)
+
+            # Check if the new_id is not equal to the existing one
+            if new_id and new_id != user.username:
+                try:
+                    Users.objects.get(username=new_id)
+                    return Response({"error": "already exist id"}, status=status.HTTP_409_CONFLICT)
+                except Users.DoesNotExist:
+                    user.username = new_id
+
+            # Check if the new_info exceeds the maximum allowed length
+            max_info_length = 100  # Set your desired maximum length here
+            if new_info and len(new_info) > max_info_length:
+                return Response({"error": "target", "target_fields": ["id", "info"]},
+                                status=status.HTTP_409_CONFLICT)
+
+            # Update the user data based on the request data
+            # For example, if request.data contains the updated values
+            # user.name = request.data.get('name', user.name)
+            # user.email = request.data.get('email', user.email)
+            # user.info = request.data.get('info', user.info)
+            if new_info:
+                user.info = new_info
+
+            user.save()
+            return Response({"message": "Update successfully"}, status=status.HTTP_200_OK)
+
+        except Users.DoesNotExist:
+            return Response({"error": "Unauthorized request"}, status=status.HTTP_401_UNAUTHORIZED)
     
     #유저정보 삭제
     def delete(self, request, id):
-        user = Users.objects.get(username=id) # id랑 같은 값을 갖는 데이터 탐색 (남들이 보기에 id == 백엔드의 username)
-        pass # 일하세요 동은씨
+        try:
+            user = Users.objects.get(username=id)
+            user.delete()
+            return Response({"message": "Delete successfully"}, status=status.HTTP_200_OK)
+        except Users.DoesNotExist:
+            return Response({"error": "Unauthorized request"}, status=status.HTTP_401_UNAUTHORIZED)
