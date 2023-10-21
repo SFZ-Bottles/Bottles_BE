@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'app',
     'users',
+    'chat',
     'albums',
     'comments',
     'search',
