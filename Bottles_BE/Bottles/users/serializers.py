@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from users.models import Users, Friendship
+from local_settings import SERVER_ADDRESS
 
 class UsersSerializer(serializers.ModelSerializer):
     class Meta:
@@ -13,6 +14,26 @@ class UsernameSerializer(serializers.ModelSerializer):
     class Meta:
         model = Users
         fields = ['id']
+
+class UserSerializer(serializers.ModelSerializer):
+    id = serializers.CharField(source='username')
+    name = serializers.CharField()#source='name')
+    email = serializers.CharField()#source='email')
+    info = serializers.CharField()#source='info')
+    create_at = serializers.DateTimeField()#source='create_at')
+    avatar = serializers.SerializerMethodField()
+
+    def get_avatar(self, user):
+        return SERVER_ADDRESS + f'api/image/avatar/{user.username}/'
+    
+    class Meta:
+        model = Users
+        fields = ['id', 'name', 'email', 'info', 'create_at', 'avatar']
+
+
+
+
+
 
 
 """

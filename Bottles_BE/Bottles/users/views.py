@@ -7,15 +7,16 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
-import jwt, datetime
+import jwt, datetime, os
 
 from users.models import Users, Friendship
 from users.serializers import UsersSerializer, UsernameSerializer
 from users.auth import Authenticate
-from local_settings import JWT_SECRET_KEY
+from local_settings import JWT_SECRET_KEY, SERVER_ADDRESS
 
 from django.shortcuts import get_object_or_404
 
+from django.utils import timezone
 
 #api/users/
 class UserListView(APIView):
@@ -201,7 +202,7 @@ class FollowerListView(APIView):
         }
         return Response(response_data, status=status.HTTP_200_OK)
 
-
+from django.core.files.uploadedfile import InMemoryUploadedFile
 #api/auth/validate-token/
 class UserDetailView(APIView):
     def get(self, request, id):
@@ -210,16 +211,49 @@ class UserDetailView(APIView):
             "id": user.username,           	
             "name": user.name,       
             "email": user.email,  
-            "info": user.info 
+            "info": user.info, 
+            "created_at" : user.create_at,
+            "avatar" : SERVER_ADDRESS + 'api/image/avatar/'+ user.username +'/'
 
         },status=200)
     
-    #유저 정보 수정
+
     def put(self, request, id):
-        user = Users.objects.get(username=id) # id랑 같은 값을 갖는 데이터 탐색 (남들이 보기에 id == 백엔드의 username)
-        pass # 일하세요 동은씨
-    
+        user = Users.objects.get(username=id)
+        
+        # 각 필드에 대한 업데이트를 수행
+        for key, value in request.data.items():
+            if key == 'avatar' and isinstance(value, InMemoryUploadedFile):
+
+                unique_filename = user.id+ '_' + str(timezone.now()).replace(':', '-').replace('.', '-')+ '_' + value.name
+                avatar_path ='MediaLibrary/UserProfile/'+ user.id + '/image/' 
+                
+                # 디렉토리가 존재하지 않으면 생성
+                if not os.path.exists(avatar_path):
+                    os.makedirs(avatar_path)
+                
+                with open(avatar_path+ unique_filename, 'wb') as file:
+                    for chunk in value.chunks():
+                        file.write(chunk)
+                
+                user.avatar = avatar_path+unique_filename
+                
+
+            else:
+                setattr(user, key, value)
+
+        user.save()
+        
+        return Response("User updated successfully", status=status.HTTP_200_OK)  
+
     #유저정보 삭제
     def delete(self, request, id):
-        user = Users.objects.get(username=id) # id랑 같은 값을 갖는 데이터 탐색 (남들이 보기에 id == 백엔드의 username)
-        pass # 일하세요 동은씨
+        try:
+            user = Users.objects.get(username=id)
+            if(user.pw == request.data['pw']):
+                user.delete()
+                return HttpResponse("User deleted successfully", status=200)
+            else:
+                return HttpResponse("Wrong pw", status=401)    
+        except Users.DoesNotExist:
+            return HttpResponse("User not found", status=404)

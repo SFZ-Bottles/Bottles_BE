@@ -11,25 +11,25 @@ from users.auth import Authenticate
 from django.shortcuts import get_object_or_404
 
 from users.models import Users
+from users.serializers import UserSerializer
 
 class UsernameSearchView(APIView):
     def get(self, request):
         
         target_string = self.request.query_params.get('q', '')
         num = int(self.request.query_params.get('num', 10))
-        # 주어진 키워드를 포함하는 username을 갖는 사용자를 검색
-        users = Users.objects.filter(username__icontains=target_string).values_list('username', flat=True)
+        # 주어진 키워드를 포함하는 username, info, avatar를 갖는 사용자를 검색
+        users = Users.objects.filter(username__icontains=target_string)
 
+        result = UserSerializer(users, many=True)
 
-        # 검색 결과를 리스트로 저장
-        result = list(users)
-
-        if len(result) < num:
-            num = len(result)
+        if len(result.data) < num:
+            num = len(result.data)
+        
         response_data = {
             'message': 'ok',
-            'num' : num,
-            'result' : result[:num]
+            'num': num,
+            'result': result.data[:num]
         }
 
         return Response(response_data, status=status.HTTP_200_OK)
