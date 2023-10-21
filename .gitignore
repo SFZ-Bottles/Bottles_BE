@@ -12,6 +12,10 @@ db.sqlite3-journal
 media
 
 uploads/
+Bottles_BE/Bottles/MediaLibrary/UserMedia/
+Bottles_BE/Bottles/MediaLibrary/UserProfile/
+Bottles/MediaLibrary/UserMedia/
+Bottles/MediaLibrary/UserProfile/
 MediaLibrary/UserMedia/
 MediaLibrary/UserProfile/
 

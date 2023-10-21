@@ -30,9 +30,9 @@ class AlbumListSerializer(serializers.ModelSerializer):
         cover_page = obj.page.filter(species="cover").first()
         
         if cover_page:
-            return SERVER_ADDRESS + "api/albums/image/" + cover_page.id + '/'
+            return SERVER_ADDRESS + "api/image/page/" + cover_page.id + '/'
         else:
-            return SERVER_ADDRESS + "api/albums/image/" + '0' + '/'
+            return SERVER_ADDRESS + "api/image/page/" + '0' + '/'
     
 
 
@@ -50,7 +50,7 @@ class PageResponseSerializer(serializers.ModelSerializer):
     
     def get_data(self, obj):
         if obj.species in ['cover', 'image', 'video']:
-            return SERVER_ADDRESS + 'api/albums/image/' + obj.id +'/'
+            return SERVER_ADDRESS + 'api/image/page/' + obj.id +'/'
         
         elif obj.species == 'text':
             return obj.item

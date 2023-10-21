@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'users',
     'chat',
     'albums',
+    'image',
     'comments',
     'search',
     'chatsystem',

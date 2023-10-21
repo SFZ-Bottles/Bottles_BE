@@ -155,9 +155,9 @@ class FileUploadView(APIView):
                         image_file = request.FILES.get(key)
                         # 이미지 파일 처리
                         if image_file:
-                            upload_dir ='MediaLibrary/UserMedia/'+ user_id + '/images/'
+                            upload_dir ='MediaLibrary/UserMedia/'+ user.id + '/images/'
                             #str(timezone.now()).replace(':', '-').replace('.', '-')
-                            upload_name = user.username+ '_' + str(timezone.now()).replace(':', '-').replace('.', '-')+ '_' + image_file.name
+                            upload_name = user.id+ '_' + str(timezone.now()).replace(':', '-').replace('.', '-')+ '_' + image_file.name
                             if not os.path.exists(upload_dir):
                                 os.makedirs(upload_dir)
 
@@ -176,7 +176,7 @@ class FileUploadView(APIView):
                             for chunk in handler.file:
                                 if isinstance(chunk, TemporaryUploadedFile):
                                     # 동영상 파일을 저장할 디렉토리 경로 설정
-                                    upload_dir = 'MediaLibrary/UserMedia/'+ user_id + '/videos/'
+                                    upload_dir = 'MediaLibrary/UserMedia/'+ user.id + '/videos/'
                                     if not os.path.exists(upload_dir):
                                         os.makedirs(upload_dir)
 
@@ -230,40 +230,3 @@ class AlbumDetailView(APIView):
         
         return Response(album_serializer.data, status=status.HTTP_201_CREATED)
     
-
-from PIL import Image
-import io
-
-class ImageView(APIView):
-    def get(self, request, id):
-        resizing = request.query_params.get('resizing', False)
-        width = int(request.query_params.get('width', 0))
-        height = int(request.query_params.get('height', 0))
-
-        # set image path
-        if (id=='0'):
-            image_path = 'MediaLibrary/ServiceImages/BottlesLogo.jpeg'
-        else:
-            page_instance = Pages.objects.get(id=id)
-            image_path = page_instance.item
-
-        # check image path
-        if not os.path.exists(image_path):
-            return Response({"error": "Image not found"}, status=404)
-
-        # image resizing
-        if resizing:
-            image = Image.open(image_path)
-            if width > 0 and height > 0:
-                image = image.resize((width, height), Image.ANTIALIAS)
-            image_io = io.BytesIO()
-            image.save(image_io, format='JPEG')
-            image_data = image_io.getvalue()
-        else:
-            with open(image_path, 'rb') as image_file:
-                image_data = image_file.read()
-
-        response = HttpResponse(image_data, content_type='image/jpeg')
-        return response
-        
-
