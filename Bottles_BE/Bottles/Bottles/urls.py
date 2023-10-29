@@ -24,7 +24,8 @@ urlpatterns = [
     path('api/image/', include('image.urls')),
     path('api/comments/', include('comments.urls')),
     path('api/search/', include('search.urls')),
-    path('api/chatrooms/', include('chatsystem.urls')),   
+    path('api/chatrooms/', include('chatsystem.urls')),
+    path('api/secret_mode/', include('secretmode.urls')),   
     path('admin/', admin.site.urls),
     #path('chat/', include('chat.urls')),
 ]

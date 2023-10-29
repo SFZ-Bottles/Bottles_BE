@@ -230,3 +230,21 @@ class AlbumDetailView(APIView):
         
         return Response(album_serializer.data, status=status.HTTP_201_CREATED)
     
+    def delete(self, request, id, *args, **kwargs):
+        #아이디 및 비밀번호 확인
+        user_id=Authenticate(request)
+        if(user_id==False):
+            return Response({ "error": "Invalid token"},status=401)
+        
+        try:
+            Albums_instance = Albums.objects.get(id=id)
+            if Albums_instance.made_by.id == user_id:
+                Albums_instance.delete()
+                return Response({ "messege": "delete successfully"}, status=status.HTTP_200_OK)
+            else :
+                Response({'error': 'Unauthorized request'}, status=status.HTTP_401_UNAUTHORIZED)
+            
+        except Albums.DoesNotExist:
+            return Response({ "error": "Album not found"}, status=404)
+        
+    

@@ -14,7 +14,7 @@ from .models import Comments, Reply
 from users.models import Users
 from albums.models import Albums
 
-from .serializers import CommentsSerializer, CommentResponseSerializer
+from .serializers import CommentsSerializer, CommentResponseSerializer, CommentDetailSerializer
 
 class CommentsListView(APIView):
     def get(self, request):
@@ -46,8 +46,8 @@ class CommentsListView(APIView):
             album_id = request.data['album_id']
             made_by_username = request.data['made_by']
             content = request.data['content']
-            mentioned_user_id = request.data['mentioned_user_id']
-            parent_comment_id = request.data['parent_comment_id']
+            mentioned_user_id = request.data.get('mentioned_user_id') #request.data['mentioned_user_id']
+            parent_comment_id = request.data.get('parent_comment_id') #request.data['parent_comment_id']
 
             target_album=get_object_or_404(Albums, id=album_id)
             owner =get_object_or_404(Users, username=made_by_username)
@@ -84,5 +84,31 @@ class CommentsListView(APIView):
 
 class CommentsDetatilView(APIView):
     def get(self, request, comment_id):
-        pass
+        comments = Comments.objects.filter(id=comment_id) #.exclude(reply_child__isnull=False)
+
+        # CommentSerializer를 사용하여 데이터를 직렬화합니다.
+        serializer = CommentDetailSerializer(comments)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request, comment_id):
+        comments = Comments.objects.get(id=comment_id) #.exclude(reply_child__isnull=False)
+        comments.content = request.data['content']
+        comments.save()
+        # CommentSerializer를 사용하여 데이터를 직렬화합니다.
+        serializer = CommentDetailSerializer(comments)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def delete(self, request, comment_id):
+        user_id=Authenticate(request)
+        if(user_id==False):
+            return Response({ "error": "Invalid token"},status=401)
+        comments = Comments.objects.get(id=comment_id)
+        if (user_id== comments.made_by.id):
+            comments.delete()
+            return Response({'message':'ok'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'error':'Unauthorized request'}, status=status.HTTP_401_UNAUTHORIZED)
+        
     

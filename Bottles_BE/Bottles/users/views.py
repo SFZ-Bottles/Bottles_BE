@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 import jwt, datetime, os
+import time
 
 from users.models import Users, Friendship
 from users.serializers import UsersSerializer, UsernameSerializer
@@ -17,6 +18,10 @@ from local_settings import JWT_SECRET_KEY, SERVER_ADDRESS
 from django.shortcuts import get_object_or_404
 
 from django.utils import timezone
+
+from users.utils.randomString_utils import RandomString
+
+from secretmode.models import Accountconnection
 
 #api/users/
 class UserListView(APIView):
@@ -32,30 +37,60 @@ class UserListView(APIView):
         #렝스검사
         #https://hashcode.co.kr/questions/8710/%EC%95%88%EB%85%95%ED%95%98%EC%84%B8%EC%9A%94-%EC%9E%A5%EA%B3%A0-is_valid%EC%9D%98-%EB%8F%99%EC%9E%91%EB%B0%A9%EC%8B%9D%EC%9D%B4-%EA%B6%81%EA%B8%88%ED%95%A9%EB%8B%88%EB%8B%A4
 
-        #회원정보저장
-        
-        #data = JSONParser().parse(request)
-        
-        '''
-        serializer = UsersSerializer_SignUp(data=request.data)  
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"register successfully"},status=200)
-        
-        #need to fix
-        else:
-            return Response({"error..."},status=500)
-        '''
        
         #회원정보 저장   
-
-        user = Users(username=request.data['id'], 
+        nomal_user = Users(username=request.data['id'], 
                     pw=request.data['pw'],                    
                     name = request.data['name'], 
                     email = request.data['email'], 
                     info = request.data['info']
                     )
-        user.save()
+        nomal_user.save()
+
+        # ToDo 이메일 확인
+
+        #secret mode account save
+        random_id = RandomString.generate_random_string(10)
+        maximum_iterations = 1000
+        start_time = time.time()
+
+        try:
+            while Users.objects.filter(username=random_id).exists():
+                print(f'target: {Users.objects.filter(username=random_id).exists()}')
+                print(f'id: {random_id}')
+                random_id = RandomString.generate_random_string(10)
+
+                if time.time() - start_time > 10:  # 10초 이상 루프를 돌면
+                    nomal_user.delete()
+                    raise Exception("10초 이상 실행되어 예외를 발생시킴")
+
+                maximum_iterations -= 1
+                if maximum_iterations <= 0:
+                    nomal_user.delete()
+                    raise Exception("최대 반복 횟수 초과로 예외를 발생시킴")
+
+        except Exception as e:
+            # 예외를 캐치하고 처리합니다.
+            nomal_user.delete()
+            print(f"예외 발생: {e}")
+            return Response({"error"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        print(11111)
+        secret_user = Users(username=random_id, 
+                    pw=nomal_user.pw,                    
+                    create_at = nomal_user.create_at,
+                    is_private = True
+                    )
+        secret_user.save()
+        print(22222)
+
+        new_connection = Accountconnection(nomal_user = nomal_user,
+                                           secret_user = secret_user,
+                                           pw = nomal_user.pw)
+        new_connection.save()
+        print(33333)
+
+        # Response
         return Response({"register successfully"}, status=200)
     
     def get(self, request):
@@ -97,6 +132,7 @@ class LoginView(APIView):
         payload = {
             'id' : user.username,
             'email' : user.email,
+            'is_private' : user.is_private,
             'exp' : datetime.datetime.now() + datetime.timedelta(days=30),
             'iat' : datetime.datetime.now()
         }
@@ -202,7 +238,9 @@ class FollowerListView(APIView):
         }
         return Response(response_data, status=status.HTTP_200_OK)
 
+
 from django.core.files.uploadedfile import InMemoryUploadedFile
+
 #api/auth/validate-token/
 class UserDetailView(APIView):
     def get(self, request, id):
@@ -249,9 +287,12 @@ class UserDetailView(APIView):
     #유저정보 삭제
     def delete(self, request, id):
         try:
-            user = Users.objects.get(username=id)
-            if(user.pw == request.data['pw']):
-                user.delete()
+            nomal_user = Users.objects.get(username=id)
+            if(nomal_user.pw == request.data['pw']):
+                accountconnection_instance = Accountconnection.objects.get(nomal_user = nomal_user)
+                secret_user = accountconnection_instance.secret_user
+                secret_user.delete()                
+                nomal_user.delete()
                 return HttpResponse("User deleted successfully", status=200)
             else:
                 return HttpResponse("Wrong pw", status=401)    

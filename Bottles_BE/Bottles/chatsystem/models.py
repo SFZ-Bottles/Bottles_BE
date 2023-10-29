@@ -20,7 +20,7 @@ class Chatroom(models.Model):
 
 class Chatmessage(models.Model):
     id = models.BigAutoField(primary_key=True)
-    chatroom = models.ForeignKey('Chatroom', models.DO_NOTHING)
+    chatroom = models.ForeignKey('Chatroom', models.DO_NOTHING, db_column='chatroom_id')
     user = models.ForeignKey(Users, models.DO_NOTHING, db_column='user_id')
     content = models.TextField()
     timestamp = models.DateTimeField(default=timezone.now)
@@ -32,9 +32,9 @@ class Chatmessage(models.Model):
 
 class Chatparticipant(models.Model):
     id = models.BigAutoField(primary_key=True) 
-    chatroom = models.ForeignKey('Chatroom', models.DO_NOTHING)
+    chatroom = models.ForeignKey('Chatroom', models.DO_NOTHING, db_column='chatroom_id')
     user = models.ForeignKey(Users, models.DO_NOTHING, db_column='user_id')
 
     class Meta:
-        managed = True
+        managed = False
         db_table = 'chatparticipant'

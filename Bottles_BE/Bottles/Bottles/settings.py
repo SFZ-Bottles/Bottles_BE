@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'comments',
     'search',
     'chatsystem',
+    'secretmode',
 ]
 
 MIDDLEWARE = [
