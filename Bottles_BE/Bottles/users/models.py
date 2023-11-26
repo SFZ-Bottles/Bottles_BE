@@ -28,6 +28,8 @@ class Users(models.Model):
         managed = False
         db_table = 'users'
 
+    
+
 class Friendship(models.Model):
     follower = models.ForeignKey('Users', models.DO_NOTHING, db_column='follower', related_name= 'Friends_follower')
     followed = models.ForeignKey('Users', models.DO_NOTHING, db_column='followed', related_name= 'Friends_followed')

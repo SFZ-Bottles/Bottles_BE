@@ -258,11 +258,12 @@ class UserDetailView(APIView):
 
     def put(self, request, id):
         user = Users.objects.get(username=id)
-        
+ 
         # 각 필드에 대한 업데이트를 수행
         for key, value in request.data.items():
             if key == 'avatar' and isinstance(value, InMemoryUploadedFile):
 
+                ##############################################################################기존이미지 삭제
                 unique_filename = user.id+ '_' + str(timezone.now()).replace(':', '-').replace('.', '-')+ '_' + value.name
                 avatar_path ='MediaLibrary/UserProfile/'+ user.id + '/image/' 
                 
@@ -275,8 +276,10 @@ class UserDetailView(APIView):
                         file.write(chunk)
                 
                 user.avatar = avatar_path+unique_filename
+            
+            elif key == 'id':
+                setattr(user, 'username', value)
                 
-
             else:
                 setattr(user, key, value)
 

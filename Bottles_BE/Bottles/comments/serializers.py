@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from .models import Comments, Reply
 
+from local_settings import SERVER_ADDRESS
+
 class ReplySerializer(serializers.ModelSerializer):
     class Meta:
         model = Reply
@@ -10,6 +12,7 @@ class ReplyDetailSerializer(serializers.ModelSerializer):
     id=serializers.CharField(source='child_comment.id')
     album_id=serializers.CharField(source='child_comment.album.id')    
     user_id=serializers.CharField(source='child_comment.made_by.username')
+    avatar=serializers.SerializerMethodField()
     mention=serializers.CharField(source='child_comment.mentioned_user.username',allow_null=True)
     comment=serializers.CharField(source='child_comment.content')
     created_at=serializers.DateTimeField(format='%Y-%m-%dT%H:%M:%SZ',source='child_comment.created_at') 
@@ -17,12 +20,16 @@ class ReplyDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Reply
-        fields = ('id', 'album_id', 'user_id', 'mention','created_at','updated_at', 'comment',)
+        fields = ('id', 'album_id', 'user_id', 'avatar' ,'mention','created_at','updated_at', 'comment',)
+
+    def get_avatar(self, obj):
+        return SERVER_ADDRESS + 'api/image/avatar/'+ obj.child_comment.made_by.username +'/'
 
 
 class CommentsSerializer(serializers.ModelSerializer):
     album_id=serializers.CharField(source='album.id')    
     user_id=serializers.CharField(source='made_by.username')
+    avatar=serializers.SerializerMethodField()
     mention=serializers.CharField(source='mentioned_user.username',allow_null=True)
     comment=serializers.CharField(source='content')
     reply_num=serializers.SerializerMethodField()
@@ -31,15 +38,19 @@ class CommentsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comments
-        fields = ('id', 'album_id', 'user_id', 'mention','created_at','updated_at', 'comment', 'reply_num','reply')
+        fields = ('id', 'album_id', 'user_id', 'avatar' ,'mention','created_at','updated_at', 'comment', 'reply_num','reply')
         ordering = ['order']
     
     def get_reply_num(self, obj):
         # obj의 Reply 역참조 관계를 사용하여 Reply 쿼리셋을 가져옵니다.
         reply_queryset = obj.reply_parent.all()
-        
         # Reply 쿼리셋의 길이를 반환하여 reply_num 필드로 설정합니다.
         return len(reply_queryset)
+    
+    def get_avatar(self, obj):
+        return SERVER_ADDRESS + 'api/image/avatar/'+ obj.made_by.username +'/'
+        
+        
 
 class CommentResponseSerializer(serializers.ModelSerializer):
     id = serializers.CharField()

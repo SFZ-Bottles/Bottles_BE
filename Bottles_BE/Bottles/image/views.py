@@ -39,7 +39,27 @@ class PageImageView(APIView):
         if resizing:
             image = Image.open(image_path)
             if width > 0 and height > 0:
-                image = image.resize((width, height), Image.ANTIALIAS)
+                image = image.resize((width, height), Image.Resampling.LANCZOS)#Image.ANTIALIAS)
+            
+            if image.mode == '1':
+                # 이미지를 8비트 흑백 이미지로 변환
+                image = image.convert('L')
+            elif image.mode == 'CMYK':
+                # 이미지를 RGB 모드로 변환
+                image = image.convert('RGB')
+            elif image.mode == 'YCbCr':
+                # 이미지를 RGB 모드로 변환
+                image = image.convert('RGB')
+            elif image.mode == 'I':
+                # 이미지를 8비트 흑백 이미지로 변환
+                image = image.convert('L')
+            elif image.mode == 'F':
+                # 이미지를 8비트 흑백 이미지로 변환
+                image = image.convert('L')
+            elif image.mode == 'P':
+                # 이미지를 RGB 모드로 변환
+                image = image.convert('RGB')
+                
             image_io = io.BytesIO()
             image.save(image_io, format='JPEG')
             image_data = image_io.getvalue()
@@ -67,8 +87,29 @@ class AvatarImageView(APIView):
         # image resizing
         if resizing:
             image = Image.open(image_path)
+            
             if width > 0 and height > 0:
-                image = image.resize((width, height), Image.ANTIALIAS)
+                image = image.resize((width, height), Image.Resampling.LANCZOS)#Image.ANTIALIAS)
+            
+            if image.mode == '1':
+                # 이미지를 8비트 흑백 이미지로 변환
+                image = image.convert('L')
+            elif image.mode == 'CMYK':
+                # 이미지를 RGB 모드로 변환
+                image = image.convert('RGB')
+            elif image.mode == 'YCbCr':
+                # 이미지를 RGB 모드로 변환
+                image = image.convert('RGB')
+            elif image.mode == 'I':
+                # 이미지를 8비트 흑백 이미지로 변환
+                image = image.convert('L')
+            elif image.mode == 'F':
+                # 이미지를 8비트 흑백 이미지로 변환
+                image = image.convert('L')
+            elif image.mode == 'P':
+                # 이미지를 RGB 모드로 변환
+                image = image.convert('RGB')
+
             image_io = io.BytesIO()
             image.save(image_io, format='JPEG')
             image_data = image_io.getvalue()
