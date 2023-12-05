@@ -6,7 +6,7 @@ from local_settings import JWT_SECRET_KEY
 def Authenticate(request):
 
     
-
+    
     token = request.META.get('HTTP_AUTHORIZATION')
     if not token :
         token = request.COOKIES.get('token')

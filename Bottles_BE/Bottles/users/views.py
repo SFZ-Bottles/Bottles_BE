@@ -151,6 +151,21 @@ class LoginView(APIView):
         print(token)
         return res
     
+#api/auth/logout/
+class LogoutView(APIView):
+    def post(self, request):
+        res=Response()
+        res.data = {
+            'message' : 'ok, logout'
+        }
+        try:
+            res.set_cookie(key= 'AUTHORIZATION', value=" ", httponly= True)
+            res.set_cookie(key= 'token', value=" ", httponly= True)
+        except:
+            print('로그아웃 실패')
+
+        return res
+    
 #api/auth/validate-token/
 class ValidateTokenView(APIView):
     def post(self, request):

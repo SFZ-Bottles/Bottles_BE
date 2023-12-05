@@ -8,8 +8,10 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from albums.models import Albums, Pages
+from secretmode.models import Usersecretpostmatches
 from users.models import Users, Friendship
 from users.auth import Authenticate
+from secretmode.utils.user_secret_post_relationships import SecretAlbumConnector
 
 from django.http import JsonResponse
 from django.views import View
@@ -46,10 +48,15 @@ class FileUploadView(APIView):
     def get(self, request, *args, **kwargs):
         #아이디 및 비밀번호 확인
         #print(request.COOKIES.get('token'))
-        #print(request.META.get('HTTP_AUTHORIZATION'))
+        print(request.META.get('HTTP_AUTHORIZATION'))
+        print("Request method:", request.method)
+        print("Request content type:", request.content_type)
+        print("Request body:", request.body)
+        print("Request method:", request)
         user_id=Authenticate(request)
         if(user_id==False):
             return Response({ "error": "Invalid token"},status=401)
+
 
         
         is_private = self.request.query_params.get('is_private', False)
@@ -64,11 +71,16 @@ class FileUploadView(APIView):
             num = 1 # 또는 다른 기본값 설정
         order_by = self.request.query_params.get('order_by', '-created_at')
 
-        if target == "follow":
+        if target == "follow" and is_private==False :
             following_list = Friendship.objects.filter(follower=user_id).values_list('followed', flat=True)
             queryset = Albums.objects.filter(made_by_id__in=following_list, is_private=is_private).order_by(order_by)
 
-            
+        elif target == "recommended" : # and is_private==True :
+            secret_user= Users.objects.get(id=user_id)
+            secret_album_list=Usersecretpostmatches.objects.filter(user=secret_user)
+            queryset = Albums.objects.filter(id__in=[match.album_id for match in secret_album_list])
+
+
         else:
             user = get_object_or_404(Users, username=target)
             #queryset = Albums.objects.filter(made_by=user, is_private=is_private).order_by(order_by)[(counts-1)*num : counts*num]
@@ -94,16 +106,10 @@ class FileUploadView(APIView):
     
     # create an album
     def post(self, request, *args, **kwargs):
-
+        '''
         print("Request method:", request.method)
         print("Request content type:", request.content_type)
         print("Request body:", request.body)
-
-        
-
-
-        
-        print("@@@@@@@@@@@@@@@@@@@@@@")
         
         print('user_id: ')
         print(request.POST.get('user_id'))
@@ -118,7 +124,7 @@ class FileUploadView(APIView):
         print('is_private: ')
         print(request.POST.get('is_private'))
         #get values by key
-        print("@@@@@@@@@@@@@@@@@@@@@@")
+        '''
 
         is_private = convert_to_boolean(request.POST.get('is_private'))
         num = int(request.POST.get('num'))
@@ -199,6 +205,11 @@ class FileUploadView(APIView):
                                                     item = new_page['pages_data']
                                                     )
                     new_page_instance.save()
+
+                #in case secret albums
+                if new_album.is_private==True:
+                    SecretAlbumConnector.connect_users_with_album_Demo(album_id=new_album.id, user_id=new_album.made_by.id) # 시크릿 유저와 연결 
+
             except json.JSONDecodeError:
                 return JsonResponse({'error': 'Invalid JSON data'})
         else:
@@ -218,6 +229,8 @@ class AlbumDetailView(APIView):
     # get album detail view
     def get(self, request, id, *args, **kwargs):
         #아이디 및 비밀번호 확인
+        
+
         user_id=Authenticate(request)
         if(user_id==False):
             return Response({ "error": "Invalid token"},status=401)

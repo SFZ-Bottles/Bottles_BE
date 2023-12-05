@@ -8,6 +8,7 @@ urlpatterns = [
 
     #auth
     path('login/', views.LoginView.as_view()),
+    path('logout/', views.LogoutView.as_view()),
     path('validate-token/',views.ValidateTokenView.as_view()),
     
     #users
