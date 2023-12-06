@@ -215,15 +215,16 @@ class FollowListView(APIView):
             return Response({ "error": "Invalid token"},status=401)
         """
         user = get_object_or_404(Users, username=id)
-        following_list = Friendship.objects.filter(follower=user.id).order_by('-created_at').values_list('followed', flat=True)
+        #following_list = Friendship.objects.filter(follower=user.id).order_by('-created_at').values_list('followed', flat=True)
+        following_list = Friendship.objects.filter(follower=user.id).order_by('-created_at').values_list('followed__username', flat=True) #follwed에 해당하는 id를 갖는 user모델의 username필드 반환
         queryset = Users.objects.filter(id__in=following_list)
 
         serializer = UsernameSerializer(queryset, many=True)
 
         response_data = {
             "message": "ok",
-            "num": len(serializer.data),
-            "result": serializer.data
+            "num": len(following_list),#len(serializer.data),
+            "result": following_list #serializer.data
         }
         return Response(response_data, status=status.HTTP_200_OK)
 
@@ -241,15 +242,16 @@ class FollowerListView(APIView):
             return Response({ "error": "Invalid token"},status=401)
         """
         user = get_object_or_404(Users, username=id)
-        following_list = Friendship.objects.filter(followed=user.id).order_by('-created_at').values_list('follower', flat=True)
+        #following_list = Friendship.objects.filter(followed=user.id).order_by('-created_at').values_list('follower', flat=True)
+        following_list = Friendship.objects.filter(followed=user.id).order_by('-created_at').values_list('follower__username', flat=True)
         queryset = Users.objects.filter(id__in=following_list)
 
         serializer = UsernameSerializer(queryset, many=True)
 
         response_data = {
             "message": "ok",
-            "num": len(serializer.data),
-            "result": serializer.data
+            "num": len(following_list),#len(serializer.data),
+            "result": following_list #serializer.data
         }
         return Response(response_data, status=status.HTTP_200_OK)
 
