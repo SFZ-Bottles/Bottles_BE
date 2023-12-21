@@ -15,11 +15,14 @@ from users.serializers import UserSerializer
 
 class UsernameSearchView(APIView):
     def get(self, request):
-        
+
+        user_id=Authenticate(request)
+        user = get_object_or_404(Users, id=user_id)
+
         target_string = self.request.query_params.get('q', '')
         num = int(self.request.query_params.get('num', 10))
         # 주어진 키워드를 포함하는 username, info, avatar를 갖는 사용자를 검색
-        users = Users.objects.filter(username__icontains=target_string)
+        users = Users.objects.filter(username__icontains=target_string, is_private=user.is_private)
 
         result = UserSerializer(users, many=True)
 
