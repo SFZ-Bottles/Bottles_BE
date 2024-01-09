@@ -16,6 +16,7 @@ from .models import Chatroom, Chatparticipant, Chatmessage
 from .serializers import ChatroomSerializer, MessageSerializer
 
 from users.models import Users
+from django.db.models import Count
 
 #api/chatrooms/
 class ChatRoomListView(APIView):
@@ -25,6 +26,30 @@ class ChatRoomListView(APIView):
         #변수 세팅
         data = request.data
         members = data.get('members', [])
+
+        # 채팅방 중복 체크
+        existing_chatrooms = (
+            Chatroom.objects
+            .filter(chatparticipant__user__username__in=members)
+            .values('id')
+            .annotate(member_count=Count('chatparticipant__user'))
+            .filter(member_count=len(members))
+        )
+
+        # 모든 참여자가 해당 채팅방에 참여 중인지 확인
+        for chatroom_data in existing_chatrooms:
+            chatroom_id = chatroom_data['id']
+
+            # 해당 채팅방에 속한 모든 참여자
+            participants_in_chatroom = Chatparticipant.objects.filter(chatroom_id=chatroom_id)
+
+            # 모든 members가 해당 채팅방에 참여 중인지 확인
+            is_all_members_participating = all(participant.user.username in members for participant in participants_in_chatroom)
+
+            if is_all_members_participating:
+                # 이미 존재하는 채팅방의 경우
+                return Response({'error': 'Already existing chatroom.'}, status=status.HTTP_409_CONFLICT)
+
         
         #chat room 생성
         chatroom = Chatroom(name=data['name']) #ToDo: 없을 경우 에러핸들링 필요

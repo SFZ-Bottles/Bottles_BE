@@ -16,7 +16,7 @@ class Usersecretpostmatches(models.Model):
     id = models.BigAutoField(primary_key=True)
     user = models.ForeignKey(Users, models.DO_NOTHING)
     album = models.ForeignKey(Albums, models.DO_NOTHING)
-    is_confirmed = models.IntegerField()
+    is_confirmed = models.IntegerField(default=False)
     connection_date = models.DateTimeField()
     confirmation_date = models.DateTimeField(blank=True, null=True)
     status = models.CharField(max_length=20, blank=True, null=True)

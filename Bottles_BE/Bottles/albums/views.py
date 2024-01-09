@@ -48,11 +48,12 @@ class FileUploadView(APIView):
     def get(self, request, *args, **kwargs):
         #아이디 및 비밀번호 확인
         #print(request.COOKIES.get('token'))
-        print(request.META.get('HTTP_AUTHORIZATION'))
-        print("Request method:", request.method)
-        print("Request content type:", request.content_type)
-        print("Request body:", request.body)
-        print("Request method:", request)
+        #print(request.META.get('HTTP_AUTHORIZATION'))
+        #print("Request method:", request.method)
+        #print("Request content type:", request.content_type)
+        #print("Request body:", request.body)
+        #print("Request method:", request)
+
         user_id=Authenticate(request)
         if(user_id==False):
             return Response({ "error": "Invalid token"},status=401)
@@ -60,6 +61,10 @@ class FileUploadView(APIView):
 
         
         is_private = self.request.query_params.get('is_private', False)
+        if(is_private == 'true' or is_private == 'True'): 
+            is_private = True
+        elif(is_private == 'false' or is_private == 'False'): 
+            is_private = False
         target = self.request.query_params.get('target', 'follow')
         counts = int(self.request.query_params.get('counts', 1))
         #num = int(self.request.query_params.get('num', 1))
@@ -74,7 +79,6 @@ class FileUploadView(APIView):
         if target == "follow" and is_private==False :
             following_list = Friendship.objects.filter(follower=user_id).values_list('followed', flat=True)
             queryset = Albums.objects.filter(made_by_id__in=following_list, is_private=is_private).order_by(order_by)
-
         elif target == "recommended" : # and is_private==True :
             secret_user= Users.objects.get(id=user_id)
             secret_album_list=Usersecretpostmatches.objects.filter(user=secret_user)
@@ -86,7 +90,10 @@ class FileUploadView(APIView):
             #queryset = Albums.objects.filter(made_by=user, is_private=is_private).order_by(order_by)[(counts-1)*num : counts*num]
             queryset = Albums.objects.filter(made_by=user, is_private=is_private).order_by(order_by)
 
-        serializer = AlbumListSerializer(queryset, many=True)
+        serializer = AlbumListSerializer(queryset, many=True, owner=user_id)
+        #serializer = AlbumListSerializer(queryset, many=True)
+        #serializer.owner = user_id
+
         totla_length=len(serializer.data)
         if (counts*num > totla_length):
             if((counts-1)*num>totla_length):
@@ -96,7 +103,13 @@ class FileUploadView(APIView):
         else:
             result =serializer.data[(counts-1)*num : counts*num]
         
-
+        print("토큰!!!!:", request.COOKIES.get('token'))
+        #print(request.META.get('HTTP_AUTHORIZATION'))
+        print("Request method:", request.method)
+        print("Request content type:", request.content_type)
+        print("Request body:", request.body)
+        print("Request method:", request)
+        print(f'result: {result}')################################
         response_data = {
             "message": "ok",
             "num": len(result),
@@ -238,6 +251,14 @@ class AlbumDetailView(APIView):
         try:
             Albums_instance = Albums.objects.get(id=id)
             album_serializer = AlbumResponseSerializer(Albums_instance, context={'custom_message': 'ok'})
+            #Albums_instance.
+            if Albums_instance.is_private == True:
+                Usersecretpostmatches_instance = Usersecretpostmatches.objects.get(album= Albums_instance, user_id= user_id)
+                Usersecretpostmatches_instance.confirmation_date = timezone.now()
+                Usersecretpostmatches_instance.is_confirmed = True; 
+                Usersecretpostmatches_instance.save()
+                 
+                      
         except Albums.DoesNotExist:
             return Response({ "error": "Album not found"}, status=404)
         
@@ -248,14 +269,13 @@ class AlbumDetailView(APIView):
         user_id=Authenticate(request)
         if(user_id==False):
             return Response({ "error": "Invalid token"},status=401)
-        
         try:
             Albums_instance = Albums.objects.get(id=id)
             if Albums_instance.made_by.id == user_id:
                 Albums_instance.delete()
                 return Response({ "messege": "delete successfully"}, status=status.HTTP_200_OK)
             else :
-                Response({'error': 'Unauthorized request'}, status=status.HTTP_401_UNAUTHORIZED)
+                return Response({'error': 'Unauthorized request'}, status=status.HTTP_401_UNAUTHORIZED)
             
         except Albums.DoesNotExist:
             return Response({ "error": "Album not found"}, status=404)

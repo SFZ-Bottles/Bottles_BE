@@ -23,7 +23,7 @@ class SecretAlbumConnector:
                 Usersecretpostmatches.objects.create(
                     user=user,
                     album=album,
-                    is_confirmed=0,
+                    #is_confirmed=0,
                     connection_date=datetime.now()
                 )
 

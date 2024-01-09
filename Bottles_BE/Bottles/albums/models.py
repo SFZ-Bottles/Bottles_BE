@@ -39,10 +39,22 @@ class Albums(models.Model):
                 self.id = generate_comb_guid()
             super(Albums, self).save(*args, **kwargs)
 
+    def delete(self, *args, **kwargs):
+        # Delete associated pages with species 'image', 'cover', or 'video'
+        associated_pages = Pages.objects.filter(album_id=self.id, species__in=['image', 'cover', 'video'])
+
+        for page in associated_pages:
+            file_path = page.item  # Assuming item contains the file path
+            if os.path.isfile(file_path):
+                os.remove(file_path)
+
+        super(Albums, self).delete(*args, **kwargs)
+
     class Meta:
         managed = False
         db_table = 'albums'
 
+import os
 
 class Pages(models.Model):
     id = models.CharField(primary_key=True, max_length=36,editable=False)
@@ -56,6 +68,25 @@ class Pages(models.Model):
             if not self.id:
                  self.id = generate_comb_guid()
             super(Pages, self).save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        # Delete associated file if species is 'image', 'cover', or 'video'
+        if self.species in ['image', 'cover', 'video']:
+            file_path = self.item  # Assuming item contains the file path
+            print('\n\n\n\n 1 \n\n\n\n')
+            if os.path.isfile(file_path):
+                print('\n\n\n\n 2 \n\n\n\n')
+                os.remove(file_path)
+            else :
+                print('\n\n\n\n 33333 \n\n\n\n')
+                raise FileNotFoundError(f"File not found: {file_path}")
+        
+        super(Pages, self).delete(*args, **kwargs) 
+
+                 
+
+        
+
 
 
     class Meta:

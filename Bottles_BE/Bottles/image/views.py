@@ -27,6 +27,8 @@ class PageImageView(APIView):
         # set image path
         if (id=='0'):
             image_path = 'MediaLibrary/ServiceImages/BottlesLogo.jpeg'
+        elif id=='1':
+            image_path = 'MediaLibrary/ServiceImages/BottlesLogo_locked.png'
         else:
             page_instance = Pages.objects.get(id=id)
             image_path = page_instance.item

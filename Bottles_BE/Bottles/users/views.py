@@ -122,6 +122,8 @@ class LoginView(APIView):
         #아이디 및 비밀번호 확인
         try:
             user = Users.objects.get(username=request.data['id'])
+            if(user.is_private==True):
+                return Response({ "error": "Invalid id"},status=401)
             if(user.pw != request.data['pw']):
                 return Response({ "error": "wrong password"},status=401)
         except Users.DoesNotExist:
@@ -170,6 +172,13 @@ class LogoutView(APIView):
 class ValidateTokenView(APIView):
     def post(self, request):
         #아이디 및 비밀번호 확인
+        #print("토큰!!!!:", request.COOKIES.get('token'))
+        print(request.META.get('HTTP_AUTHORIZATION'))
+        print("Request method:", request.method)
+        print("Request content type:", request.content_type)
+        print("Request body:", request.body)
+        print("Request method:", request)
+        
         id=Authenticate(request)
         if(id==False):
             return Response({ "error": "Invalid token"},status=401)
