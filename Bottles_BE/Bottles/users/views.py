@@ -290,6 +290,11 @@ class UserDetailView(APIView):
             if key == 'avatar' and isinstance(value, InMemoryUploadedFile):
 
                 ##############################################################################기존이미지 삭제
+                if user.avatar != None:
+                    legacy_file_path = user.avatar  # Assuming user.avatar contains the file path
+                    if os.path.isfile(legacy_file_path):
+                        os.remove(legacy_file_path)
+                #새 프로필 설정
                 unique_filename = user.id+ '_' + str(timezone.now()).replace(':', '-').replace('.', '-')+ '_' + value.name
                 avatar_path ='MediaLibrary/UserProfile/'+ user.id + '/image/' 
                 
@@ -310,8 +315,29 @@ class UserDetailView(APIView):
                 setattr(user, key, value)
 
         user.save()
+
+        #토큰 재발행
+        #jwt생성
+        payload = {
+            'id' : user.username,
+            'email' : user.email,
+            'is_private' : user.is_private,
+            'exp' : datetime.datetime.now() + datetime.timedelta(days=30),
+            'iat' : datetime.datetime.now()
+        }
+
+        token = jwt.encode(payload,JWT_SECRET_KEY,algorithm='HS256')
         
-        return Response("User updated successfully", status=status.HTTP_200_OK)  
+        return Response({
+            "token" : token,
+            "id": user.username,           	
+            "name": user.name,       
+            "email": user.email,  
+            "info": user.info, 
+            "created_at" : user.create_at,
+            "avatar" : SERVER_ADDRESS + 'api/image/avatar/'+ user.username +'/'
+
+        }, status=status.HTTP_200_OK)  
 
     #유저정보 삭제
     def delete(self, request, id):
@@ -324,6 +350,6 @@ class UserDetailView(APIView):
                 nomal_user.delete()
                 return HttpResponse("User deleted successfully", status=200)
             else:
-                return HttpResponse("Wrong pw", status=401)    
+                return HttpResponse({"error":"Unauthorized request"}, status=401)    
         except Users.DoesNotExist:
             return HttpResponse("User not found", status=404)
