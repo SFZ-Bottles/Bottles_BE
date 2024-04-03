@@ -10,27 +10,30 @@ import uuid
 # Feel free to rename the models, but don't rename db_table values or field names.
 
 class Users(models.Model):
-    id = models.CharField(primary_key=True, max_length=36,default=uuid.uuid4, editable=False)
+    id = models.CharField(primary_key=True, max_length=36, default=uuid.uuid4, editable=False)
     username = models.CharField(max_length=30)
     pw = models.CharField(max_length=30)
-    name = models.CharField(max_length=30)
-    email = models.CharField(unique=True, max_length=40)
+    name = models.CharField(max_length=30, null=True)
+    email = models.CharField(unique=True, max_length=40,null=True)
     info = models.TextField(blank=True, null=True)
     create_at = models.DateTimeField(default=timezone.now)
     avatar = models.TextField(blank=True, null=True)
     birthdate = models.DateTimeField(blank=True, null=True)
-    role = models.CharField(max_length=20, default='default_role')
-    status = models.CharField(max_length=20, default='default_role')
+    role = models.CharField(max_length=20, default='member')
+    status = models.CharField(max_length=20, default='active')
     last_login = models.DateTimeField(blank=True, null=True)
+    is_private = models.IntegerField(default=False) #ADDED
 
     class Meta:
         managed = False
         db_table = 'users'
 
+    
+
 class Friendship(models.Model):
     follower = models.ForeignKey('Users', models.DO_NOTHING, db_column='follower', related_name= 'Friends_follower')
     followed = models.ForeignKey('Users', models.DO_NOTHING, db_column='followed', related_name= 'Friends_followed')
-    created_at = models.DateTimeField()
+    created_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
         managed = False
