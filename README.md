@@ -46,8 +46,6 @@ Bottles 모드 내에서 비밀 번호를 변경을 하신 적이 있으시다�
 <img width="1260" alt="secretmode13" src="https://github.com/SFZ-Bottles/Bottles_BE/assets/92240138/53eaddd7-126e-4771-9ba9-4b824646bbdf">
 이제 Bottles 모드에서 피드를 작성해 나의 고민을 타인에게 익명으로 털어놓아보세요!
 
-#실행방법
-
 #API문서
 https://github.com/SFZ-Bottles/Bottles_BE/files/14855737/Bottles.rest.API.ver.1.2.0.pdf
 
@@ -55,14 +53,10 @@ https://github.com/SFZ-Bottles/Bottles_BE/files/14855737/Bottles.rest.API.ver.1.
 https://github.com/SFZ-Bottles/Bottles_BE/files/14855850/Bottles_DB.Modeling.ver.1.2.0.pdf
 
 # 🤼 팀원
-<table>
-  <tbody>
-    <tr>
-      <td align="center"><a href="https://github.com/GoByeonghu"><br /><sub><b>BE: 고병후</b></sub></a><br /></td>
-      <td align="center"><a href="https://github.com/Codelicious100"><br /><sub><b>BE: Alice</b></sub></a><br /></td>
-      <td align="center"><a href=https://github.com/hyo6004"><br /><sub><b>Android: 김효중 </b></sub></a><br /></td>
-      <td align="center"><a href="https://github.com/jungjunhyung99"><br /><sub><b>FE: 정준형</b></sub></a><br /></td>
-      <td align="center"><a href="https://github.com/WangJongwook"><br /><sub><b>FE: 왕종욱</b></sub></a><br /></td>
-    </tr>
-  </tbody>
-</table>
+
+<a href="https://github.com/GoByeonghu"><br /><sub><b>BE: 고병후</b></sub></a><br/>
+<a href="https://github.com/Codelicious100"><br /><sub><b>BE: Alice</b></sub></a><br/>
+<a href=https://github.com/hyo6004"><br /><sub><b>Android: 김효중 </b></sub></a><br/>
+<a href="https://github.com/jungjunhyung99"><br /><sub><b>FE: 정준형</b></sub></a><br/>
+<a href="https://github.com/WangJongwook"><br /><sub><b>FE: 왕종욱</b></sub></a><br/>
+
