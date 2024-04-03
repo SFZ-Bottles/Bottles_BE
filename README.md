@@ -54,9 +54,9 @@ https://github.com/SFZ-Bottles/Bottles_BE/files/14855850/Bottles_DB.Modeling.ver
 
 # 🤼 팀원
 
-<a href="https://github.com/GoByeonghu"><br /><sub><b>BE: 고병후</b></sub></a><br/>
-<a href="https://github.com/Codelicious100"><br /><sub><b>BE: Alice</b></sub></a><br/>
-<a href=https://github.com/hyo6004"><br /><sub><b>Android: 김효중 </b></sub></a><br/>
-<a href="https://github.com/jungjunhyung99"><br /><sub><b>FE: 정준형</b></sub></a><br/>
-<a href="https://github.com/WangJongwook"><br /><sub><b>FE: 왕종욱</b></sub></a><br/>
+- [BE: 고병후](https://github.com/GoByeonghu)
+- [BE: Alice](https://github.com/Codelicious100)
+- [Android: 김효중](https://github.com/hyo6004)
+- [FE: 정준형](https://github.com/jungjunhyung99)
+- [FE: 왕종욱](https://github.com/WangJongwook)
 
